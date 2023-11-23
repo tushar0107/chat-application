@@ -13,7 +13,7 @@ import Header from "../components/Header";
 import "../theme/chatpage.css";
 import { sendOutline, sendSharp } from "ionicons/icons";
 
-const Chat: React.FC = () => {
+const ChatSocket: React.FC = () => {
   const params: any = useParams();
 
   //to create a msg object
@@ -23,16 +23,29 @@ const Chat: React.FC = () => {
   //to set msg input
   const [text, setText] = useState("");
   //to store a static array of current chats to update on every send
+
+  var ws: any;
+
+  if (ws) {
+    ws.onerror = ws.onopen = ws.onclose = null;
+    ws.close();
+  }
+
+  ws = new WebSocket("ws://localhost:6969");
+  ws.open = () => {
+    alert("Connection opened!");
+  };
+  ws.onmessage = (data: any) => {
+    console.log(data);
+    setText('');
+  };
+  ws.onclose = function () {
+    ws.null;
+  };
+
   var chat: any = [];
 
-  useEffect(() => {
-    if (localStorage.getItem(`chat-${params.id}`) === null) {
-      localStorage.setItem(`chat-${params.id}`, JSON.stringify(""));
-    } else {
-      let localchat: any = localStorage.getItem(`chat-${params.id}`);
-      setChats(JSON.parse(localchat));
-    }
-  }, []);
+  useEffect(() => {}, []);
 
   //gets the input through user
   const getMsg = (e: any) => {
@@ -43,10 +56,14 @@ const Chat: React.FC = () => {
 
   //on send by the user the chat is pushed to the chat array and saved to the localstorage
   const sendMsg = () => {
+    if (!ws) {
+      alert("No websocket connection...");
+      return;
+    }
+    ws.send(text);
+    let msg = {type: "sent", msg: text}
     const newchat = [...chats, { ...msg }];
     setChats(newchat);
-    setText("");
-    localStorage.setItem(`chat-${params.id}`, JSON.stringify(newchat));
   };
 
   return (
@@ -96,21 +113,4 @@ const Chat: React.FC = () => {
   );
 };
 
-export default Chat;
-
-// {
-// type: "rec",
-// msg: "hii",
-// },
-// {
-// type: "sent",
-// msg: "hello",
-// },
-// {
-// type: "rec",
-// msg: "abc",
-// },
-// {
-// type: "sent",
-// msg: "def",
-// },
+export default ChatSocket;

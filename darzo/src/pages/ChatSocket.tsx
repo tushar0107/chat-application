@@ -36,7 +36,10 @@ const ChatSocket: React.FC = () => {
     alert("Connection opened!");
   };
   ws.onmessage = (data: any) => {
-    console.log(data);
+    console.log(data.data);
+    let msg = {type: "rec", msg: data.data};
+    const newchat = [...chats, { ...msg }];
+    setChats(newchat);
     setText('');
   };
   ws.onclose = function () {
@@ -50,8 +53,8 @@ const ChatSocket: React.FC = () => {
   //gets the input through user
   const getMsg = (e: any) => {
     setText(e.target.value);
-    let str = { type: "sent", msg: e.target.value };
-    setMsg(str);
+    // let str = { type: "sent", msg: e.target.value };
+    // setMsg(str);
   };
 
   //on send by the user the chat is pushed to the chat array and saved to the localstorage
@@ -61,6 +64,7 @@ const ChatSocket: React.FC = () => {
       return;
     }
     ws.send(text);
+    console.log('sent',text);
     let msg = {type: "sent", msg: text}
     const newchat = [...chats, { ...msg }];
     setChats(newchat);

@@ -62,9 +62,7 @@ const UserPage: React.FC<UserProps> = (props:any) => {
           </div>
         </IonItem>
       </IonList>
-        <Route exact path="/chat/:id">
-          <Chat/>
-        </Route>
+        
     </>
   );
 };

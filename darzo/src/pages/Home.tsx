@@ -1,6 +1,7 @@
 import {
   IonAvatar,
   IonBadge,
+  IonButton,
   IonContent,
   IonHeader,
   IonItem,
@@ -15,69 +16,49 @@ import {
 import Header from "../components/Header";
 import Menu from "../components/Menu";
 import "./Home.css";
+import { useState } from "react";
+import UserPage from "../components/UserPage";
+import ChatSocket from "./ChatSocket";
+import { Route } from "react-router";
+
 
 const Home: React.FC = () => {
-  return (
-    <>
-      <Menu />
-      <IonPage id="main-content">
-        <Header />
-        <IonContent fullscreen>
-          <IonList lines="full" typeof="ios" className="chat-list">
-            <IonItem routerLink="/chat/1">
-              <IonAvatar>
-                <img src="profile.webp" alt="" className="profile-image" />
-              </IonAvatar>
-              <div className="item-details">
-                <IonLabel>User 1</IonLabel>
-                <IonNote>Text 1</IonNote>
-              </div>
-              <div slot="end">
-                <IonNote>12:56</IonNote>
-                <br />
-                <IonBadge color="success" className="chat-badge">
-                  5
-                </IonBadge>
-              </div>
-            </IonItem>
+  const [userId, setUserId] = useState<any>();
+  console.log(userId);
+  var id:any = null;
+  const handleInput =(e:any)=>{
+    id = e.target.value;
+  }
+  const userLogin = ()=>{
+    setUserId(id);
+  }
 
-            <IonItem routerLink="/chat/2">
-              <IonAvatar>
-                <img src="profile.webp" alt="" className="profile-image" />
-              </IonAvatar>
-              <div className="item-details">
-                <IonLabel>User 2</IonLabel>
-                <IonNote>Text 2</IonNote>
+    return (
+      <>
+        <Menu />
+        <IonPage id="main-content">
+          <Header userId={userId}/>
+          <IonContent fullscreen>
+            {
+            userId!==undefined ?
+            <>
+              <UserPage userId={userId}/>
+            </>
+            :
+            <>
+              <div id="login-form">
+                <h1>login please</h1>
+                <input type="number" onChange={handleInput} value={userId} placeholder="Enter your mobile number"/>
+                <IonButton onClick={userLogin} color="primary"><strong>Login</strong></IonButton>
               </div>
-              <div slot="end">
-                <IonNote>12:56</IonNote>
-                <br />
-                <IonBadge color="success" className="chat-badge">
-                  5
-                </IonBadge>
-              </div>
-            </IonItem>
-            <IonItem routerLink="/chat/3">
-              <IonAvatar>
-                <img src="profile.webp" alt="" className="profile-image" />
-              </IonAvatar>
-              <div className="item-details">
-                <IonLabel>User 3</IonLabel>
-                <IonNote>Text 3</IonNote>
-              </div>
-              <div slot="end">
-                <IonNote>12:56</IonNote>
-                <br />
-                <IonBadge color="success" className="chat-badge">
-                  5
-                </IonBadge>
-              </div>
-            </IonItem>
-          </IonList>
-        </IonContent>
-      </IonPage>
-    </>
-  );
+            </>}
+          </IonContent>
+        </IonPage>
+        <Route path="/chat/:id">
+          <ChatSocket userId={userId}/>
+        </Route>
+      </>
+    );
 };
 
 export default Home;

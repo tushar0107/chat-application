@@ -13,7 +13,11 @@ import Header from "../components/Header";
 import "../theme/chatpage.css";
 import { sendOutline, sendSharp } from "ionicons/icons";
 
-const ChatSocket: React.FC = () => {
+interface UserProps{
+  userId : number;
+}
+
+const ChatSocket: React.FC<UserProps>  = (props:any) => {
   const params: any = useParams();
 
   //to create a msg object
@@ -31,21 +35,21 @@ const ChatSocket: React.FC = () => {
     ws.close();
   }
 
-  ws = new WebSocket("ws://localhost:6969");
+  ws = new WebSocket(`ws://localhost:6969/${props.userId}`);
   ws.open = () => {
     alert("Connection opened!");
   };
   ws.onmessage = (data: any) => {
-    console.log(data.data);
-    let msg = {type: "rec", msg: data.data};
+    console.log(JSON.parse(JSON.parse(data.data)).message);
+    let message = JSON.parse(JSON.parse(data.data)).message;
+    let msg = {type: "rec", msg: message};
     const newchat = [...chats, { ...msg }];
     setChats(newchat);
-    setText('');
   };
   ws.onclose = function () {
     ws.null;
   };
-
+ 
   var chat: any = [];
 
   useEffect(() => {}, []);
@@ -57,14 +61,17 @@ const ChatSocket: React.FC = () => {
     // setMsg(str);
   };
 
+
   //on send by the user the chat is pushed to the chat array and saved to the localstorage
   const sendMsg = () => {
     if (!ws) {
       alert("No websocket connection...");
       return;
     }
-    ws.send(text);
-    console.log('sent',text);
+    const data = {sender: props.userId, recipient: params.id, message: text};
+    ws.send(JSON.stringify(data));
+    setText('');
+    console.log('sent',data);
     let msg = {type: "sent", msg: text}
     const newchat = [...chats, { ...msg }];
     setChats(newchat);
@@ -74,7 +81,7 @@ const ChatSocket: React.FC = () => {
     <>
       <Menu />
       <IonPage id="main-content">
-        <Header />
+        <Header userId={props.userId}/>
         <IonContent fullscreen>
           <div id="chat-section">
             {Array.isArray(chats)

@@ -53,7 +53,7 @@ const Chat: React.FC = () => {
     <>
       <Menu />
       <IonPage id="main-content">
-        <Header userId={453} />
+        <Header userId={453} title={params.id} />
         <IonContent fullscreen>
           <div id="chat-section">
             {Array.isArray(chats)

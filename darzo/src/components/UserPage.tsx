@@ -1,9 +1,5 @@
 import { IonList, IonItem, IonAvatar, IonLabel, IonNote, IonBadge } from "@ionic/react";
 import React from "react";
-import { Route } from "react-router";
-import ChatSocket from "../pages/ChatSocket";
-import Chat from "../pages/Chat";
-
 interface UserProps{
   userId : number;
 }
@@ -12,7 +8,7 @@ const UserPage: React.FC<UserProps> = (props:any) => {
   return (
     <>
       <IonList lines="full" typeof="ios" className="chat-list">
-        <IonItem routerLink="/chat/111">
+        <IonItem routerLink={`/chat/7304431820/${props.userId}`}>
           <IonAvatar>
             <img src="profile.webp" alt="" className="profile-image" />
           </IonAvatar>
@@ -29,7 +25,7 @@ const UserPage: React.FC<UserProps> = (props:any) => {
           </div>
         </IonItem>
 
-        <IonItem routerLink="/chat/222">
+        <IonItem routerLink={`/chat/222/${props.userId}`}>
           <IonAvatar>
             <img src="profile.webp" alt="" className="profile-image" />
           </IonAvatar>
@@ -45,7 +41,7 @@ const UserPage: React.FC<UserProps> = (props:any) => {
             </IonBadge>
           </div>
         </IonItem>
-        <IonItem routerLink="/chat/333">
+        <IonItem routerLink={`/chat/333/${props.userId}`}>
           <IonAvatar>
             <img src="profile.webp" alt="" className="profile-image" />
           </IonAvatar>
@@ -62,7 +58,8 @@ const UserPage: React.FC<UserProps> = (props:any) => {
           </div>
         </IonItem>
       </IonList>
-        
+      
+      
     </>
   );
 };

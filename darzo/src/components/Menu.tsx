@@ -7,6 +7,8 @@ import {
   IonToolbar,
   IonMenuButton,
   IonButtons,
+  IonList,
+  IonItem,
 } from "@ionic/react";
 
 const Menu: React.FC = () => {
@@ -17,7 +19,11 @@ const Menu: React.FC = () => {
           <IonTitle>Menu Content</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding">This is the menu content.</IonContent>
+      <IonContent className="ion-padding">
+        <IonList>
+          <IonItem routerLink="/home" routerDirection="back" onClick={()=>{localStorage.removeItem('userId')}}>Logout</IonItem>
+        </IonList>  
+      </IonContent>
     </IonMenu>
   );
 };

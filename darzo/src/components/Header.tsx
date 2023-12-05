@@ -4,6 +4,7 @@ import { personOutline } from "ionicons/icons";
 
 interface UserProps{
   userId : number;
+  title: string;
 }
 
 const Header: React.FC<UserProps> = (props:any) => {
@@ -22,7 +23,7 @@ const Header: React.FC<UserProps> = (props:any) => {
             </IonPopover>
             <IonMenuButton></IonMenuButton>
           </IonButtons>
-          <IonTitle>Menu</IonTitle>
+          <IonTitle>{props.title}</IonTitle>
         </IonToolbar>
       </IonHeader>
     </>

@@ -36,7 +36,9 @@ const App: React.FC = () => (
         <Route exact path="/">
           <Redirect to="/home" />
         </Route>
-
+        <Route path="/chat/:id/:user">
+          <ChatSocket/>
+        </Route>
       </IonRouterOutlet>
     </IonReactRouter>
   </IonApp>

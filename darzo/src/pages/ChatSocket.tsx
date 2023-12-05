@@ -1,27 +1,34 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router";
 import Menu from "../components/Menu";
 import {
   IonButton,
   IonButtons,
   IonContent,
+  IonFooter,
   IonIcon,
   IonPage,
+  IonPopover,
 } from "@ionic/react";
 import Header from "../components/Header";
 
 import "../theme/chatpage.css";
-import { sendOutline, sendSharp } from "ionicons/icons";
+import { sendSharp } from "ionicons/icons";
 
 interface UserProps{
   userId : number;
+  title: string;
 }
 
-const ChatSocket: React.FC<UserProps>  = (props:any) => {
+const ChatSocket:React.FC = ()=>{
+  const popInfo = useRef(null);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [popText, setPopText] = useState('');
+
+  var chatHistory = [];
+
   const params: any = useParams();
 
-  //to create a msg object
-  const [msg, setMsg] = useState({});
   //to set chats for currend id
   const [chats, setChats] = useState<any[]>([{}]);
   //to set msg input
@@ -34,44 +41,61 @@ const ChatSocket: React.FC<UserProps>  = (props:any) => {
     ws.onerror = ws.onopen = ws.onclose = null;
     ws.close();
   }
+  ws = new WebSocket(`ws://localhost:6969/${params.user}`);
 
-  ws = new WebSocket(`ws://localhost:6969/${props.userId}`);
-  ws.open = () => {
-    alert("Connection opened!");
-  };
+  useEffect(() => {
+    
+    ws.onopen = () => {
+      setPopoverOpen(true);
+      setTimeout(()=>{
+        setPopoverOpen(false);
+      },2000);
+    };
+  }, []);
+  
+  
   ws.onmessage = (data: any) => {
-    console.log(JSON.parse(JSON.parse(data.data)).message);
-    let message = JSON.parse(JSON.parse(data.data)).message;
-    let msg = {type: "rec", msg: message};
-    const newchat = [...chats, { ...msg }];
-    setChats(newchat);
+    if(JSON.parse(JSON.parse(data.data)).sender === params.id){
+      let message = JSON.parse(JSON.parse(data.data)).message;
+      let msg = {type: "rec", msg: message};
+      const newchat = [...chats, { ...msg }];
+      setChats(newchat);
+    }
   };
   ws.onclose = function () {
     ws.null;
+
   };
  
   var chat: any = [];
 
-  useEffect(() => {}, []);
+  
 
   //gets the input through user
   const getMsg = (e: any) => {
     setText(e.target.value);
-    // let str = { type: "sent", msg: e.target.value };
-    // setMsg(str);
   };
 
 
   //on send by the user the chat is pushed to the chat array and saved to the localstorage
   const sendMsg = () => {
-    if (!ws) {
-      alert("No websocket connection...");
-      return;
+    const data = {sender: params.user, recipient: params.id, message: text};
+    if(ws.readyState === WebSocket.OPEN){
+      ws.send(JSON.stringify(data));
+    }else if(ws.readyState === WebSocket.CONNECTING){
+      setPopText('connecting');
+      setPopoverOpen(true);
+      setTimeout(()=>{
+        setPopoverOpen(false);
+      },2000);
+    }else if(ws.readyState === WebSocket.CLOSED){
+      setPopText('Offline');
+      setPopoverOpen(true);
+      setTimeout(()=>{
+        setPopoverOpen(false);
+      },2000);
     }
-    const data = {sender: props.userId, recipient: params.id, message: text};
-    ws.send(JSON.stringify(data));
     setText('');
-    console.log('sent',data);
     let msg = {type: "sent", msg: text}
     const newchat = [...chats, { ...msg }];
     setChats(newchat);
@@ -81,8 +105,11 @@ const ChatSocket: React.FC<UserProps>  = (props:any) => {
     <>
       <Menu />
       <IonPage id="main-content">
-        <Header userId={props.userId}/>
+        <Header userId={params.user} title={params.id}/>
         <IonContent fullscreen>
+          {popoverOpen ? <div ref={popInfo} className="status">
+            {popText}
+          </div> : null}
           <div id="chat-section">
             {Array.isArray(chats)
               ? chats.map((ele: any, key: any) => {
@@ -102,7 +129,10 @@ const ChatSocket: React.FC<UserProps>  = (props:any) => {
                 })
               : null}
           </div>
-          <div id="chat-actions">
+          
+        </IonContent>
+        <IonFooter>
+        <div id="chat-actions">
             <form action="" method="get">
               <input
                 type="text"
@@ -118,8 +148,9 @@ const ChatSocket: React.FC<UserProps>  = (props:any) => {
               </IonButton>
             </IonButtons>
           </div>
-        </IonContent>
+        </IonFooter>
       </IonPage>
+      
     </>
   );
 };

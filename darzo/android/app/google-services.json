@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "400012421661",
+    "project_id": "darzo-cfec6",
+    "storage_bucket": "darzo-cfec6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:400012421661:android:bed214da083844fc2fb4f4",
+        "android_client_info": {
+          "package_name": "io.ionic.starter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLwBhT_HboKHt7wGMjymTb2CF3BLWZHvA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

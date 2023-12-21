@@ -8,29 +8,31 @@ import {
   IonFooter,
   IonIcon,
   IonPage,
-  IonPopover,
 } from "@ionic/react";
 import Header from "../components/Header";
 
 import "../theme/chatpage.css";
 import { sendSharp } from "ionicons/icons";
-
-interface UserProps{
-  userId : number;
-  title: string;
-}
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { sendMessage } from "../redux/user/messageSlice";
+import urls from "../components/GlobalVars";
 
 const ChatSocket:React.FC = ()=>{
+  const user = useSelector((state:any)=>state.user.user);
+  const message = useSelector((state:any)=>state.messages);
+  const dispatch = useDispatch();
   const popInfo = useRef(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [popText, setPopText] = useState('');
-
+  const [name, setName] = useState('');
+  const [id, setId] = useState();
   var chatHistory = [];
-
+  
   const params: any = useParams();
 
-  //to set chats for currend id
-  const [chats, setChats] = useState<any[]>([{}]);
+  //to set chats array
+  const [chats, setChats] = useState<any[]>([]);
   //to set msg input
   const [text, setText] = useState("");
   //to store a static array of current chats to update on every send
@@ -41,22 +43,78 @@ const ChatSocket:React.FC = ()=>{
     ws.onerror = ws.onopen = ws.onclose = null;
     ws.close();
   }
-  ws = new WebSocket(`ws://localhost:6969/${params.user}`);
+  ws = new WebSocket(`${urls.WebSocketUrl}/${user.id}`);
 
   useEffect(() => {
+    axios.post(`${urls.ApiUrl}/user/${params.id}`,
+      {
+        headers:{
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      })
+    .then((res)=>{
+      setName(res.data[0].name);
+      return res;
+    })
+    .catch((err)=>{
+      console.log(err);
+    })
+
+    axios.post(`${urls.ApiUrl}/msgs`,
+    {
+      sender: user.id,
+      receiver: params.id
+    },{
+      headers:{
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+    .then((res)=>{
+      console.log(res.data);
+      return res.data;
+    })
+    .then((res)=>{
+      let chatArray:Array<Object> = [];
+      res.map((ele:any)=>{
+        console.log('sender',ele.sender, 'rece',ele.receiver);
+        console.log(params.id,params.id);
+        if(ele.sender===user.id){
+          let msg = {type:'sent', msg: ele.msg};
+          chatArray = [...chatArray, msg];
+        }else if(ele.sender==params.id){
+          let msg = {type:'rec', msg: ele.msg};
+          chatArray = [...chatArray, msg];
+        }
+      });
+      console.log(chatArray);
+      setChats(chatArray);
+    })
+    .catch(err => console.log(err));
     
-    ws.onopen = () => {
+    if(ws.readyState===WebSocket.OPEN){
+      setPopText('Online');
       setPopoverOpen(true);
       setTimeout(()=>{
         setPopoverOpen(false);
       },2000);
-    };
+    }
+    // ws.onopen = () => {
+     else if(ws.readyState===WebSocket.CLOSED){
+        setPopText('Offline');
+        setPopoverOpen(true);
+        setTimeout(()=>{
+          setPopoverOpen(false);
+        },2000);
+      }
+    // };
+
   }, []);
   
   
   ws.onmessage = (data: any) => {
-    if(JSON.parse(JSON.parse(data.data)).sender === params.id){
-      let message = JSON.parse(JSON.parse(data.data)).message;
+    console.log(JSON.parse(data.data));
+    if(JSON.parse(JSON.parse(data.data)).sender === parseInt(params.id)){
+      let message = JSON.parse(JSON.parse(data.data)).msg;
       let msg = {type: "rec", msg: message};
       const newchat = [...chats, { ...msg }];
       setChats(newchat);
@@ -66,22 +124,22 @@ const ChatSocket:React.FC = ()=>{
     ws.null;
 
   };
- 
-  var chat: any = [];
 
   
-
-  //gets the input through user
-  const getMsg = (e: any) => {
-    setText(e.target.value);
-  };
 
 
   //on send by the user the chat is pushed to the chat array and saved to the localstorage
   const sendMsg = () => {
-    const data = {sender: params.user, recipient: params.id, message: text};
+    console.log(chats);
+    const data = {sender: user.id, receiver: params.id, msg: text};
+    console.log(data);
+    // dispatch(sendMessage(data));
     if(ws.readyState === WebSocket.OPEN){
       ws.send(JSON.stringify(data));
+      setText('');
+      let msg = {type: "sent", msg: text}
+      const newchat = [...chats, { ...msg }];
+      setChats(newchat);
     }else if(ws.readyState === WebSocket.CONNECTING){
       setPopText('connecting');
       setPopoverOpen(true);
@@ -96,16 +154,13 @@ const ChatSocket:React.FC = ()=>{
       },2000);
     }
     setText('');
-    let msg = {type: "sent", msg: text}
-    const newchat = [...chats, { ...msg }];
-    setChats(newchat);
   };
 
   return (
     <>
       <Menu />
       <IonPage id="main-content">
-        <Header userId={params.user} title={params.id}/>
+        <Header title={name}/>
         <IonContent fullscreen>
           {popoverOpen ? <div ref={popInfo} className="status">
             {popText}
@@ -139,7 +194,7 @@ const ChatSocket:React.FC = ()=>{
                 name="message"
                 id="message"
                 value={text}
-                onChange={(e: any) => getMsg(e)}
+                onChange={(e: any) => setText(e.target.value)}
               />
             </form>
             <IonButtons>

@@ -11,7 +11,7 @@ import {
 import Header from "../components/Header";
 
 import "../theme/chatpage.css";
-import { sendOutline, sendSharp } from "ionicons/icons";
+import { zz, sendSharp } from "ionicons/icons";
 
 const Chat: React.FC = () => {
   const params: any = useParams();

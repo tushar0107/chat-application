@@ -1,9 +1,9 @@
 import { IonHeader, IonToolbar, IonButtons, IonButton, IonIcon, IonMenuButton, IonTitle, IonPopover, IonContent } from "@ionic/react";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { personOutline } from "ionicons/icons";
+import { useSelector } from "react-redux";
 
 interface UserProps{
-  userId : number;
   title: string;
 }
 
@@ -13,17 +13,12 @@ const Header: React.FC<UserProps> = (props:any) => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="end">
-            <IonButton id="view-user">
+            <IonButton routerLink="/profile">
               <IonIcon icon={personOutline}></IonIcon>
             </IonButton>
-            <IonPopover trigger="view-user" triggerAction="click">
-              <IonContent class="ion-padding">
-                {props.userId}
-              </IonContent>
-            </IonPopover>
-            <IonMenuButton></IonMenuButton>
+            <IonMenuButton/>
           </IonButtons>
-          <IonTitle>{props.title}</IonTitle>
+        <IonTitle>{props.title}</IonTitle>
         </IonToolbar>
       </IonHeader>
     </>

@@ -2,55 +2,90 @@ import {
   IonButton,
   IonContent,
   IonPage,
+  useIonAlert,
 } from "@ionic/react";
 import Header from "../components/Header";
 import Menu from "../components/Menu";
 import "./Home.css";
 import { useEffect, useState } from "react";
 import UserPage from "../components/UserPage";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { storeUserData } from "../redux/user/userSlice";
+import { login } from "../redux/user/authSclice";
+import urls from "../components/GlobalVars";
+
+import {
+  ActionPerformed,
+  PushNotificationSchema,
+  PushNotifications,
+  Token,
+} from '@capacitor/push-notifications';
 
 const Home: React.FC = () => {
-  const [userId, setUserId] = useState<any>();
-  const [login, setLogin] = useState(false);
-  console.log(userId);
-  var id: any = null;
-  const handleInput = (e: any) => {
-    setUserId(e.target.value);
-  };
-  const userLogin = () => {
-    localStorage.setItem("userId", userId);
-    setLogin(true);
-  };
+  const user = useSelector((state:any)=>state.user.user);
+  const dispatch = useDispatch();
+  const loginStatus = useSelector((state: any) => state.auth.isAuthenticated);
 
+  const [mobile, setMobile] = useState<any>('');
+
+  const [ presentAlert ] = useIonAlert();
+
+
+  const handleLogin = ()=>{
+      
+      axios.post(`${urls.ApiUrl}/login`,
+        {mobile})
+      .then((res)=>{
+        console.log(res.data);
+        localStorage.setItem('user',JSON.stringify(res.data[0]));
+        dispatch(storeUserData(res.data[0]));
+        dispatch(login(res.data[0]));
+        presentAlert({
+          header: 'Login',
+          subHeader: 'Hello '+ res.data[0].name + '!',
+          buttons: ['OK'],
+        });
+      })
+      .catch((err)=>{
+        
+        console.error(err);
+      });
+  }
+  
   useEffect(() => {
-    if (localStorage.getItem("userId") !== null) {
-      setUserId(localStorage.getItem("userId"));
-      setLogin(true);
+    const userData:any =  localStorage.getItem('user');
+    const user = JSON.parse(userData);
+    if(userData !== null){
+      dispatch(storeUserData(user));
+      dispatch(login(user)); 
     }
-  }, []);
-
+  }, [dispatch]);
+  
   return (
     <>
       <Menu />
       <IonPage id="main-content">
-        <Header userId={userId} title={"Home"} />
+        <Header title='Home' />
         <IonContent fullscreen>
-          {login ? (
+          {loginStatus ? (
             <>
-              <UserPage userId={userId} />
+              <UserPage />
             </>
           ) : (
             <>
               <div id="login-form">
-                <h1>login please</h1>
+                <h1>Login</h1>
                 <input
                   type="number"
-                  onChange={handleInput}
-                  value={userId}
-                  placeholder="Enter your mobile number"
-                />
-                <IonButton onClick={userLogin} color="primary">
-                  <strong>Login</strong>
+                  onChange={(e)=>setMobile(e.target.value)}
+                  name="mobile"
+                  id="mobile"
+                  value={mobile}
+                  placeholder="Enter mobile"
+                ></input>
+                <IonButton onClick={handleLogin} color="primary">
+                  <strong>Sign in</strong>
                 </IonButton>
               </div>
             </>

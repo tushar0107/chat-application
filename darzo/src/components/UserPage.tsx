@@ -7,7 +7,7 @@ import {
   IonBadge,
 } from "@ionic/react";
 import React, { useEffect, useState } from "react";
-import urls from "../components/GlobalVars";
+import vars from "../components/GlobalVars";
 import { useSelector } from "react-redux";
 import axios from "axios";
 
@@ -17,7 +17,7 @@ const UserPage: React.FC = () => {
 
   useEffect(() => {
     axios
-      .get(`${urls.ApiUrl}/users/${user.mobile}`)
+      .get(`${vars.ApiUrl}/users/${user.mobile}`)
       .then((res) => {
         setUsers(res.data);
       })

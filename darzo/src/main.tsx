@@ -1,22 +1,19 @@
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-import App from './App';
-import  SplashScreen from '@capacitor/splash-screen';
+import React from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App";
 
-const container = document.getElementById('root');
+const container = document.getElementById("root");
 const root = createRoot(container!);
-const renderApp = ()=>{
-
-    root.render(
-      <React.StrictMode>
+const renderApp = () => {
+  root.render(
+    <React.StrictMode>
       <App />
     </React.StrictMode>
   );
-  
 };
+renderApp();
 
-root.render(<SplashScreen/>);
+// root.render(<MySplashScreen />);
 
-setTimeout(()=>{
-  renderApp();
-}, 3000);
+// setTimeout(() => {
+// }, 3000);

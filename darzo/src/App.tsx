@@ -1,5 +1,5 @@
 import { Redirect, Route } from "react-router-dom";
-import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
+import { IonApp, IonRouterOutlet, setupIonicReact, useIonAlert } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import Home from "./pages/Home";
 
@@ -24,29 +24,20 @@ import { App as CapApp } from "@capacitor/app";
 import "./theme/variables.css";
 import ChatSocket from "./pages/ChatSocket";
 
-import { Provider } from "react-redux";
+import { Provider, connect } from "react-redux";
 // import Counter from './components/UserPage';
 import store from "./redux/store";
 import UserProfile from "./pages/UserProfile";
 import Register from "./pages/Register";
 
-import {
-  ActionPerformed,
-  PushNotificationSchema,
-  PushNotifications,
-  Token,
-} from '@capacitor/push-notifications';
-import { SplashScreen } from "@capacitor/splash-screen";
-
 setupIonicReact();
 
+
+
+
+
 const App: React.FC = () => {
-
-  SplashScreen.show({
-    autoHide: true,
-    fadeOutDuration: 300,
-  });
-
+  
 
   document.addEventListener("ionBackButton", (ev: any) => {
 
@@ -60,7 +51,6 @@ const App: React.FC = () => {
     });
   });
 
-  // initialize Sqlite
 
   return (
     <IonApp>

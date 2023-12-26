@@ -8,6 +8,7 @@ import {
   IonFooter,
   IonIcon,
   IonPage,
+  useIonAlert,
 } from "@ionic/react";
 import Header from "../components/Header";
 
@@ -16,7 +17,9 @@ import { sendSharp } from "ionicons/icons";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { sendMessage } from "../redux/user/messageSlice";
-import urls from "../components/GlobalVars";
+import vars from "../components/GlobalVars";
+import { SQLiteConnection, SQLiteDBConnection } from "@capacitor-community/sqlite";
+import useSQLiteDB from "../components/Database/LocalDB";
 
 const ChatSocket:React.FC = ()=>{
   const user = useSelector((state:any)=>state.user.user);
@@ -28,8 +31,11 @@ const ChatSocket:React.FC = ()=>{
   const [name, setName] = useState('');
   const [id, setId] = useState();
   var chatHistory = [];
+
+  const { performSQLAction, initialized } = useSQLiteDB();
   
   const params: any = useParams();
+  const [presentAlert] = useIonAlert();
 
   //to set chats array
   const [chats, setChats] = useState<any[]>([]);
@@ -43,31 +49,71 @@ const ChatSocket:React.FC = ()=>{
     ws.onerror = ws.onopen = ws.onclose = null;
     ws.close();
   }
-  ws = new WebSocket(`${urls.WebSocketUrl}/${user.id}`);
+  ws = new WebSocket(`${vars.WebSocketUrl}/${user.id}`);
+
+  const loadMsgs = async(id:any)=>{
+    try{
+      performSQLAction(async(db: SQLiteDBConnection | undefined)=>{
+        const reptSelect = await db?.query(`SELECT * FROM chat WHERE recipient=${id}`);
+        // setChats here
+        console.log(reptSelect?.values);
+      });
+    }catch(err){
+      presentAlert({
+        header: 'Error',
+        subHeader: '',
+        message: `${err}`,
+        buttons: ['OK'],
+      });
+    }
+  }
+
+  const updateMsgs = ()=>{
+
+  }
+
+  const addMsgs = (msg:any, recipient:any, sender: any)=>{
+    try{
+      performSQLAction(
+        async (db:SQLiteDBConnection | undefined) => {
+          await db?.query(`INSERT INTO chat (msg, recipient, sender) VALUES ('${msg}',${recipient}, ${sender});`);
+          const getchat = await db?.query(`SELECT * FROM chat;`);
+          //set chats here
+          console.log(getchat);
+        }
+      );
+    }catch(err){
+      presentAlert({
+        header:'Error',
+        subHeader:`${err}`,
+        message: '',
+        buttons:['OK']
+      });
+    }
+  };
+
+  const deleteMsg = ()=>{
+
+  }
 
   useEffect(() => {
-    axios.post(`${urls.ApiUrl}/user/${params.id}`,
-      {
-        headers:{
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      })
+    axios.post(`${vars.ApiUrl}/user/${params.id}`,{headers:vars.headers})
     .then((res)=>{
       setName(res.data[0].name);
       return res;
+    }).then((res)=>{
+      loadMsgs(res.data[0].id);
     })
     .catch((err)=>{
       console.log(err);
     })
 
-    axios.post(`${urls.ApiUrl}/msgs`,
+    axios.post(`${vars.ApiUrl}/msgs`,
     {
       sender: user.id,
       receiver: params.id
     },{
-      headers:{
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
+      headers:vars.headers
     })
     .then((res)=>{
       console.log(res.data);
@@ -136,6 +182,7 @@ const ChatSocket:React.FC = ()=>{
     // dispatch(sendMessage(data));
     if(ws.readyState === WebSocket.OPEN){
       ws.send(JSON.stringify(data));
+      addMsgs(text,params.id,user.id);
       setText('');
       let msg = {type: "sent", msg: text}
       const newchat = [...chats, { ...msg }];
@@ -211,3 +258,6 @@ const ChatSocket:React.FC = ()=>{
 };
 
 export default ChatSocket;
+
+
+// code from: https://github.com/aaronksaunders/ionic7-react-sqlite/blob/main/src/pages/Home.tsx
